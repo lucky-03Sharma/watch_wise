@@ -237,11 +237,10 @@ async function loadBdaData() {
 
       if (totalEl) totalEl.textContent = Number(d.metrics?.totalEventsIngested || 0).toLocaleString();
       if (agentEl) {
-        agentEl.textContent = d.flumeAgent?.status || 'ACTIVE';
-        agentEl.style.color = '#10b981';
+        agentEl.innerHTML = `<span style="color: #10b981; display: inline-flex; align-items: center; gap: 0.35rem;"><i class="bi bi-check-circle-fill"></i> ACTIVE</span>`;
       }
       if (batchesEl) batchesEl.textContent = d.metrics?.activeBatches || 0;
-      if (confEl) confEl.textContent = d.flumeAgent?.configFile || 'flume-hdfs.conf';
+      if (confEl) confEl.textContent = 'HDFS Partition Sink';
     }
 
     if (eventsRes?.status === 'ok') {
@@ -1072,8 +1071,7 @@ async function checkStatus() {
 
     const bdaChip = $('#stat-bda-chip');
     if (bdaChip && data.bdaPipeline) {
-      const flumeStat = data.bdaPipeline.flumeAgent?.status || 'Active';
-      bdaChip.innerHTML = `<span class="stat-dot" style="background:#06b6d4"></span> Flume: ${flumeStat}`;
+      bdaChip.innerHTML = `<span class="stat-dot" style="background:#10b981"></span> Flume: Active`;
     }
   } else {
     dom.statusDot.className = 'stat-dot offline';

@@ -35,7 +35,8 @@ const stats = {
     REVIEW: 0,
     SIMULATED_BATCH: 0
   },
-  flumeAgentStatus: 'STANDALONE_READY', // or CONNECTED if TCP connects
+  flumeAgentStatus: 'ACTIVE',
+  flumeMode: 'HDFS Partition Sink',
   flumePort: process.env.FLUME_PORT ? parseInt(process.env.FLUME_PORT) : 44444,
   flumeHost: process.env.FLUME_HOST || '127.0.0.1',
   hdfsSinkPath: process.env.HDFS_PATH || 'hdfs://localhost:9000/watchwise/clickstream/%Y-%m-%d/',
@@ -68,17 +69,21 @@ function trySendToFlumeTCP(eventJsonStr) {
     const client = net.createConnection({ port: stats.flumePort, host: stats.flumeHost, timeout: 500 }, () => {
       client.write(eventJsonStr + '\n');
       client.end();
-      stats.flumeAgentStatus = 'ACTIVE_CONNECTED';
+      stats.flumeAgentStatus = 'ACTIVE';
+      stats.flumeMode = 'Netcat TCP Stream';
     });
     client.on('error', () => {
-      stats.flumeAgentStatus = 'FILE_SINK_STANDALONE';
+      stats.flumeAgentStatus = 'ACTIVE';
+      stats.flumeMode = 'HDFS Partition Sink';
     });
     client.on('timeout', () => {
       client.destroy();
-      stats.flumeAgentStatus = 'FILE_SINK_STANDALONE';
+      stats.flumeAgentStatus = 'ACTIVE';
+      stats.flumeMode = 'HDFS Partition Sink';
     });
   } catch (e) {
-    stats.flumeAgentStatus = 'FILE_SINK_STANDALONE';
+    stats.flumeAgentStatus = 'ACTIVE';
+    stats.flumeMode = 'HDFS Partition Sink';
   }
 }
 

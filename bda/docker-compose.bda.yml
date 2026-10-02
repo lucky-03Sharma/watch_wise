@@ -1,0 +1,66 @@
+version: '3.8'
+
+# ==============================================================================
+# WatchWise BDA Infrastructure: Apache Hadoop HDFS + Apache Flume Cluster
+# ==============================================================================
+# Usage:
+#   docker-compose -f bda/docker-compose.bda.yml up -d
+#
+# Web UIs:
+#   - Hadoop NameNode HDFS: http://localhost:9870
+#   - HDFS DataNode:        http://localhost:9864
+#   - Flume Ingestion Port: 44444
+# ==============================================================================
+
+services:
+  # Hadoop NameNode
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: watchwise_hdfs_namenode
+    restart: always
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    environment:
+      - CLUSTER_NAME=watchwise_cluster
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+
+  # Hadoop DataNode
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: watchwise_hdfs_datanode
+    restart: always
+    ports:
+      - "9864:9864"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870"
+    env_file:
+      - ./hadoop.env
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    depends_on:
+      - namenode
+
+  # Apache Flume Ingestion Container
+  flume:
+    image: probablyfine/flume:latest
+    container_name: watchwise_flume_agent
+    restart: always
+    ports:
+      - "44444:44444"
+    volumes:
+      - ./flume/flume-netcat-hdfs.conf:/var/tmp/flume.conf
+      - ../logs/flume_source:/logs
+    environment:
+      - FLUME_AGENT_NAME=watchwise_netcat_agent
+      - FLUME_CONF_FILE=/var/tmp/flume.conf
+    depends_on:
+      - namenode
+      - datanode
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:

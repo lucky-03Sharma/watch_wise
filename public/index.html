@@ -36,6 +36,7 @@
     <ul class="nav-links">
       <li><a href="#" class="nav-link active" data-view="home" id="nav-home"><i class="bi bi-house-door-fill"></i> Home</a></li>
       <li><a href="#" class="nav-link" data-view="library" id="nav-library"><i class="bi bi-collection-fill"></i> Library</a></li>
+      <li><a href="#" class="nav-link" data-view="bda" id="nav-bda"><i class="bi bi-diagram-3-fill"></i> BDA Flume</a></li>
       <li id="nav-auth-item">
         <a href="#" class="nav-link nav-auth-btn" data-view="auth" id="nav-auth-btn"><i class="bi bi-person-circle"></i> <span>Sign In</span></a>
       </li>
@@ -67,6 +68,7 @@
     <div class="stats-strip" id="stats-strip">
       <div class="stat-chip"><span class="stat-dot"></span> 45,000+ Movies Loaded</div>
       <div class="stat-chip"><span class="stat-dot"></span> 12+ Film Genres</div>
+      <div class="stat-chip" id="stat-bda-chip"><span class="stat-dot" style="background:#06b6d4"></span> Flume: Active</div>
       <div class="stat-chip" id="stat-status"><span class="stat-dot connecting" id="status-dot"></span> Connecting...</div>
     </div>
 
@@ -257,6 +259,128 @@
         </div>
 
       </div>
+    </div>
+  </div>
+
+  <!-- ===== BDA (BIG DATA ANALYTICS) VIEW ===== -->
+  <div id="view-bda" class="hidden">
+    <div class="bda-container">
+      
+      <!-- BDA Header -->
+      <div class="bda-header">
+        <div class="hero-badge"><i class="bi bi-diagram-3-fill"></i> Big Data Analytics (BDA) Project Component</div>
+        <h1 class="bda-title"><span class="gradient-text">Apache Flume &amp; HDFS</span> Ingestion Pipeline</h1>
+        <p class="bda-subtitle">Real-time clickstream event collection via Apache Flume, partitioned into Hadoop Distributed File System (HDFS), and analyzed via MapReduce.</p>
+      </div>
+
+      <!-- Architecture Flow Diagram Card -->
+      <div class="bda-card bda-flow-card">
+        <h3 class="bda-card-title"><i class="bi bi-bezier2"></i> End-to-End BDA Architecture</h3>
+        <div class="bda-pipeline-steps">
+          <div class="bda-step">
+            <div class="step-icon"><i class="bi bi-cursor-fill"></i></div>
+            <div class="step-title">1. Web Clickstream</div>
+            <div class="step-desc">Searches, Clicks, Ratings &amp; Views</div>
+          </div>
+          <div class="step-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="bda-step">
+            <div class="step-icon"><i class="bi bi-funnel-fill"></i></div>
+            <div class="step-title">2. Flume Source</div>
+            <div class="step-desc">TAILDIR / SpoolDir / Netcat (44444)</div>
+          </div>
+          <div class="step-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="bda-step">
+            <div class="step-icon"><i class="bi bi-cpu-fill"></i></div>
+            <div class="step-title">3. Memory Channel</div>
+            <div class="step-desc">In-Memory Buffer (Cap: 10,000)</div>
+          </div>
+          <div class="step-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="bda-step">
+            <div class="step-icon"><i class="bi bi-database-fill-check"></i></div>
+            <div class="step-title">4. HDFS Sink</div>
+            <div class="step-desc">hdfs://localhost:9000/%Y-%m-%d/</div>
+          </div>
+          <div class="step-arrow"><i class="bi bi-arrow-right"></i></div>
+          <div class="bda-step">
+            <div class="step-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+            <div class="step-title">5. MapReduce / Spark</div>
+            <div class="step-desc">Clickstream &amp; Popularity Analytics</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Toolbar -->
+      <div class="bda-toolbar">
+        <button class="btn btn-primary" id="btn-bda-simulate">
+          <i class="bi bi-lightning-charge-fill"></i> Simulate Clickstream Batch (25 Events)
+        </button>
+        <button class="btn btn-ghost" id="btn-bda-analytics">
+          <i class="bi bi-play-circle-fill"></i> Run HDFS MapReduce Analytics
+        </button>
+        <button class="btn btn-ghost" id="btn-bda-refresh">
+          <i class="bi bi-arrow-clockwise"></i> Refresh Stream
+        </button>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="bda-metrics-grid">
+        <div class="bda-metric-card">
+          <div class="metric-label">Total Ingested Events</div>
+          <div class="metric-value gradient-text" id="bda-stat-total">0</div>
+          <div class="metric-sub">Streaming through Flume</div>
+        </div>
+        <div class="bda-metric-card">
+          <div class="metric-label">Flume Agent Status</div>
+          <div class="metric-value" id="bda-stat-agent" style="color: #10b981;">ACTIVE</div>
+          <div class="metric-sub" id="bda-stat-conf">flume-hdfs.conf</div>
+        </div>
+        <div class="bda-metric-card">
+          <div class="metric-label">Channel Capacity</div>
+          <div class="metric-value" style="color: #6366f1;">10,000</div>
+          <div class="metric-sub">Memory Buffer</div>
+        </div>
+        <div class="bda-metric-card">
+          <div class="metric-label">HDFS Sink Partitions</div>
+          <div class="metric-value" id="bda-stat-batches" style="color: #f59e0b;">0</div>
+          <div class="metric-sub">Active Rolled Blocks</div>
+        </div>
+      </div>
+
+      <!-- Analytics Results Card (Populated on click) -->
+      <div class="bda-card" id="bda-analytics-container" style="display: none;">
+        <h3 class="bda-card-title"><i class="bi bi-pie-chart-fill"></i> HDFS MapReduce Analytics Results</h3>
+        <div class="bda-analytics-grid" id="bda-analytics-content">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Live Stream Table -->
+      <div class="bda-card">
+        <div class="bda-card-header">
+          <h3 class="bda-card-title"><i class="bi bi-terminal-fill"></i> Live Apache Flume Event Stream</h3>
+          <span class="live-tag"><span class="stat-dot" style="background: #10b981;"></span> Ingestion Live</span>
+        </div>
+        <div class="bda-table-wrap">
+          <table class="bda-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Event Type</th>
+                <th>Event ID</th>
+                <th>Target Details / Payload</th>
+              </tr>
+            </thead>
+            <tbody id="bda-events-body">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                  No events logged yet. Perform a search or click "Simulate Clickstream Batch" above.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 

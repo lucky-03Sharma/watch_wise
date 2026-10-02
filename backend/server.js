@@ -9,6 +9,8 @@ import { dirname, join } from 'path';
 import moviesRouter from './routes/movies.js';
 import libraryRouter from './routes/library.js';
 import authRouter from './routes/auth.js';
+import bdaRouter from './routes/bda.js';
+import { getBdaStatus } from './bda/flume_collector.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,6 +48,7 @@ app.use(express.static(join(__dirname, '../public')));
 app.use('/api/movies', moviesRouter);
 app.use('/api/library', libraryRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/bda', bdaRouter);
 
 // System Status endpoint
 app.get('/api/status', async (req, res) => {
@@ -76,6 +79,7 @@ app.get('/api/status', async (req, res) => {
       status: mlStatus,
       details: mlDetails
     },
+    bdaPipeline: getBdaStatus(),
     timestamp: new Date().toISOString()
   });
 });

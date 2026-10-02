@@ -1,0 +1,33 @@
+======================================================================
+ BDA CLICKSTREAM ANALYTICS REPORT - 2026-10-02 11:53:24
+======================================================================
+Total Clickstream Records Ingested via Flume: 27
+HDFS Partitions Analyzed: 1
+
+--- [1] EVENT TYPE DISTRIBUTION ---
+  WATCHLIST            :      8 ( 29.6%)
+  SEARCH               :      6 ( 22.2%)
+  MOVIE_VIEW           :      5 ( 18.5%)
+  RECOMMENDATION       :      4 ( 14.8%)
+  FAVORITE             :      4 ( 14.8%)
+
+--- [2] TOP 5 MOST VIEWED MOVIES ---
+  Parasite                            :     4 views
+  Forrest Gump                        :     2 views
+  Pulp Fiction                        :     2 views
+  The Godfather                       :     2 views
+  Spirited Away                       :     2 views
+
+--- [3] TOP 5 SEARCH QUERIES ---
+  'space thriller'                               :     4 searches
+  'oscar winners'                               :     1 searches
+  'superhero'                               :     1 searches
+
+--- [4] TOP GENRE ENGAGEMENT ---
+  Thriller                  :     2 interactions
+  Drama                     :     2 interactions
+  Mystery                   :     1 interactions
+  Crime                     :     1 interactions
+  Action                    :     1 interactions
+
+======================================================================

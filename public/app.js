@@ -34,6 +34,7 @@ const dom = {
   viewSearch: $('#view-search'),
   viewLibrary: $('#view-library'),
   viewAuth: $('#view-auth'),
+  viewBda: $('#view-bda'),
   navAuthItem: $('#nav-auth-item'),
   formLogin: $('#form-login'),
   formRegister: $('#form-register'),
@@ -206,6 +207,7 @@ function showView(view) {
   dom.viewSearch.style.display = view === 'search' ? '' : 'none';
   dom.viewLibrary.style.display = view === 'library' ? '' : 'none';
   dom.viewAuth.style.display = view === 'auth' ? '' : 'none';
+  if (dom.viewBda) dom.viewBda.style.display = view === 'bda' ? '' : 'none';
 
   $$('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.view === view));
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -213,6 +215,171 @@ function showView(view) {
   if (view === 'library') {
     renderLibrary();
     loadLibrary();
+  } else if (view === 'bda') {
+    loadBdaData();
+  }
+}
+
+// ---- BDA (Big Data Analytics) & Flume Pipeline ----
+async function loadBdaData() {
+  try {
+    const [statusRes, eventsRes] = await Promise.all([
+      apiFetch('/api/bda/status'),
+      apiFetch('/api/bda/events?limit=25')
+    ]);
+
+    if (statusRes?.status === 'ok') {
+      const d = statusRes.data;
+      const totalEl = $('#bda-stat-total');
+      const agentEl = $('#bda-stat-agent');
+      const batchesEl = $('#bda-stat-batches');
+      const confEl = $('#bda-stat-conf');
+
+      if (totalEl) totalEl.textContent = Number(d.metrics?.totalEventsIngested || 0).toLocaleString();
+      if (agentEl) {
+        agentEl.textContent = d.flumeAgent?.status || 'ACTIVE';
+        agentEl.style.color = '#10b981';
+      }
+      if (batchesEl) batchesEl.textContent = d.metrics?.activeBatches || 0;
+      if (confEl) confEl.textContent = d.flumeAgent?.configFile || 'flume-hdfs.conf';
+    }
+
+    if (eventsRes?.status === 'ok') {
+      renderBdaEvents(eventsRes.data || []);
+    }
+  } catch (err) {
+    console.error('Error loading BDA data:', err);
+  }
+}
+
+function renderBdaEvents(events) {
+  const tbody = $('#bda-events-body');
+  if (!tbody) return;
+
+  if (!events || events.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+          No events logged yet. Perform a search or click "Simulate Clickstream Batch" above.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = events.map(evt => {
+    let payloadSummary = '';
+    const p = evt.payload || {};
+    if (p.title) payloadSummary += `<strong>Movie:</strong> ${p.title} `;
+    if (p.genre) payloadSummary += `<strong>Genre:</strong> ${Array.isArray(p.genre) ? p.genre.join(', ') : p.genre} `;
+    if (p.query) payloadSummary += `<strong>Query:</strong> "${p.query}" (${p.count || 0} hits) `;
+    if (p.topRecommendation) payloadSummary += `<strong>Rec:</strong> ${p.topRecommendation} `;
+    if (!payloadSummary) payloadSummary = JSON.stringify(p);
+
+    const timeStr = evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Just now';
+
+    return `
+      <tr>
+        <td style="white-space: nowrap; color: var(--text-muted); font-size: 0.8rem;">
+          <i class="bi bi-clock"></i> ${timeStr}
+        </td>
+        <td>
+          <span class="evt-badge ${evt.eventType}">${evt.eventType}</span>
+        </td>
+        <td>
+          <code style="font-size: 0.75rem; color: var(--accent-indigo);">${evt.eventId}</code>
+        </td>
+        <td style="font-size: 0.85rem;">
+          ${payloadSummary}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function simulateBdaTraffic() {
+  const btn = $('#btn-bda-simulate');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Ingesting...`;
+  }
+
+  try {
+    const res = await apiFetch('/api/bda/simulate', {
+      method: 'POST',
+      body: JSON.stringify({ count: 25 })
+    });
+    if (res?.status === 'ok') {
+      showToast(`Ingested 25 clickstream events into Apache Flume -> HDFS partition!`, 'success');
+      await loadBdaData();
+    } else {
+      showToast('Simulation failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error during BDA simulation', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="bi bi-lightning-charge-fill"></i> Simulate Clickstream Batch (25 Events)`;
+    }
+  }
+}
+
+async function runBdaAnalytics() {
+  const container = $('#bda-analytics-container');
+  const content = $('#bda-analytics-content');
+  const btn = $('#btn-bda-analytics');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Running MapReduce...`;
+  }
+
+  try {
+    const res = await apiFetch('/api/bda/analytics');
+    if (res?.status === 'ok' && res.data) {
+      const d = res.data;
+      if (container) container.style.display = 'block';
+
+      const renderList = (items, keyField) => {
+        if (!items || !items.length) return '<div style="color:var(--text-muted);font-size:0.8rem;">No data yet</div>';
+        return `
+          <ul class="bda-rank-list">
+            ${items.map(it => `
+              <li class="bda-rank-item">
+                <span>${it[keyField]}</span>
+                <span class="bda-rank-count">${it.count}</span>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      };
+
+      if (content) {
+        content.innerHTML = `
+          <div class="bda-analytics-col">
+            <h4><i class="bi bi-film"></i> Most Viewed Movies (HDFS)</h4>
+            ${renderList(d.topMovies, 'title')}
+          </div>
+          <div class="bda-analytics-col">
+            <h4><i class="bi bi-tags-fill"></i> Top Engaged Genres</h4>
+            ${renderList(d.topGenres, 'genre')}
+          </div>
+          <div class="bda-analytics-col">
+            <h4><i class="bi bi-search"></i> Top Search Queries</h4>
+            ${renderList(d.topSearches, 'query')}
+          </div>
+        `;
+      }
+      showToast(`Processed ${d.totalLogsRead} records across HDFS data blocks!`, 'success');
+    }
+  } catch (err) {
+    showToast('Failed to run BDA analytics', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="bi bi-play-circle-fill"></i> Run HDFS MapReduce Analytics`;
+    }
   }
 }
 
@@ -902,6 +1069,12 @@ async function checkStatus() {
     } else {
       dom.statStatus.innerHTML = `<span class="stat-dot"></span> Server Online`;
     }
+
+    const bdaChip = $('#stat-bda-chip');
+    if (bdaChip && data.bdaPipeline) {
+      const flumeStat = data.bdaPipeline.flumeAgent?.status || 'Active';
+      bdaChip.innerHTML = `<span class="stat-dot" style="background:#06b6d4"></span> Flume: ${flumeStat}`;
+    }
   } else {
     dom.statusDot.className = 'stat-dot offline';
     dom.statStatus.innerHTML = `<span class="stat-dot offline"></span> Offline`;
@@ -974,6 +1147,15 @@ $('#nav-library').addEventListener('click', (e) => {
   showView('library');
   loadLibrary();
 });
+
+$('#nav-bda')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showView('bda');
+});
+
+$('#btn-bda-simulate')?.addEventListener('click', simulateBdaTraffic);
+$('#btn-bda-analytics')?.addEventListener('click', runBdaAnalytics);
+$('#btn-bda-refresh')?.addEventListener('click', loadBdaData);
 
 $('#nav-logo').addEventListener('click', (e) => {
   e.preventDefault();

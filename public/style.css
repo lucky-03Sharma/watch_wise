@@ -528,6 +528,9 @@ ul { list-style: none; }
   transition: var(--transition-slow);
   cursor: pointer;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .movie-card:hover {
@@ -539,6 +542,7 @@ ul { list-style: none; }
 .poster-wrap {
   position: relative;
   aspect-ratio: 2/3;
+  width: 100%;
   overflow: hidden;
   background: var(--bg-secondary);
 }
@@ -547,6 +551,7 @@ ul { list-style: none; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
   transition: transform 0.5s ease;
 }
 
@@ -623,6 +628,7 @@ ul { list-style: none; }
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  z-index: 2;
 }
 
 .poster-placeholder {
@@ -635,18 +641,24 @@ ul { list-style: none; }
 }
 
 .movie-info {
-  padding: 0.85rem;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
 }
 
 .movie-title {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   margin-bottom: 0.35rem;
   line-height: 1.3;
+  min-height: 2.4rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  color: var(--text-primary);
 }
 
 .movie-meta {
@@ -654,6 +666,7 @@ ul { list-style: none; }
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .movie-year {
@@ -663,9 +676,10 @@ ul { list-style: none; }
 
 .genre-tags {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.35rem;
   flex-wrap: wrap;
-  margin-top: 0.4rem;
+  align-items: center;
+  min-height: 1.55rem;
 }
 
 .genre-tag {
@@ -1724,4 +1738,283 @@ ul { list-style: none; }
 @media (max-width: 480px) {
   .movies-grid { grid-template-columns: repeat(2, 1fr); }
   .modal { border-radius: var(--radius-lg); }
+}
+
+/* ==============================
+   BDA (BIG DATA ANALYTICS) VIEW
+============================== */
+.bda-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+}
+
+.bda-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.bda-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.bda-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.bda-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
+.bda-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.bda-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.live-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Architecture Pipeline Steps */
+.bda-pipeline-steps {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.bda-step {
+  flex: 1;
+  min-width: 160px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.bda-step:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-indigo);
+}
+
+.step-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+  color: var(--accent-indigo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin: 0 auto 0.75rem;
+}
+
+.step-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.step-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.step-arrow {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Toolbar */
+.bda-toolbar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+/* Metrics Grid */
+.bda-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.bda-metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+}
+
+.metric-sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* Live Table */
+.bda-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bda-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.bda-table th {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.bda-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.bda-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.evt-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.evt-badge.SEARCH { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.evt-badge.MOVIE_VIEW { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.evt-badge.RECOMMENDATION { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+.evt-badge.FAVORITE { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+.evt-badge.WATCHLIST { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.evt-badge.REVIEW { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+
+/* Analytics Results Grid */
+.bda-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.bda-analytics-col {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 1.2rem;
+}
+
+.bda-analytics-col h4 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bda-rank-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bda-rank-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.bda-rank-count {
+  font-weight: 700;
+  color: var(--accent-indigo);
 }

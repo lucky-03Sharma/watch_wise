@@ -1,6 +1,7 @@
 import express from 'express';
 import axios from 'axios';
 import { popularMovies, getRecommendations, getAllGenres, getMoviesByGenre } from '../data/store.js';
+import { recordBdaEvent } from '../bda/flume_collector.js';
 
 const router = express.Router();
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
@@ -132,6 +133,7 @@ router.get('/search', async (req, res) => {
         .map(enrichMLMovie)
         .filter(Boolean);
       if (enriched.length > 0) {
+        recordBdaEvent('SEARCH', { query, count: enriched.length, source: 'ml_engine' }, req);
         return res.json({ status: 'ok', source: 'ml_engine_45k', data: enriched, query });
       }
     }
@@ -140,6 +142,7 @@ router.get('/search', async (req, res) => {
   }
 
   const results = getRecommendations(query, 24).filter(m => m && m.poster && !m.poster.includes('unsplash'));
+  recordBdaEvent('SEARCH', { query, count: results.length, source: 'local_store' }, req);
   res.json({ status: 'ok', source: 'local_store', data: results, query });
 });
 
@@ -244,6 +247,22 @@ router.get('/:tmdb_id', async (req, res) => {
       similar.push(cand);
     }
     if (similar.length >= 8) break;
+  }
+
+  // Record BDA event for Flume ingestion
+  recordBdaEvent('MOVIE_VIEW', {
+    tmdb_id: movie.tmdb_id,
+    title: movie.title,
+    genre: movie.genre,
+    rating: movie.rating
+  }, req);
+
+  if (similar.length > 0) {
+    recordBdaEvent('RECOMMENDATION', {
+      queryTitle: movie.title,
+      count: similar.length,
+      topRecommendation: similar[0]?.title || null
+    }, req);
   }
 
   res.json({ status: 'ok', data: { ...movie, similar } });

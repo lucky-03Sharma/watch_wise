@@ -1,5 +1,6 @@
 import express from 'express';
 import { memoryStore } from '../data/store.js';
+import { recordBdaEvent } from '../bda/flume_collector.js';
 
 const router = express.Router();
 
@@ -29,6 +30,7 @@ router.post('/favorites', (req, res) => {
     addedAt: new Date().toISOString()
   };
   memoryStore.favorites.push(entry);
+  recordBdaEvent('FAVORITE', { tmdb_id: idNum, title, genre: entry.genre }, req);
   res.json({ status: 'ok', message: 'Added to favorites', data: entry });
 });
 
@@ -65,6 +67,7 @@ router.post('/watchlist', (req, res) => {
     addedAt: new Date().toISOString()
   };
   memoryStore.watchlist.push(entry);
+  recordBdaEvent('WATCHLIST', { tmdb_id: idNum, title, genre: entry.genre }, req);
   res.json({ status: 'ok', message: 'Added to watchlist', data: entry });
 });
 
@@ -90,6 +93,7 @@ router.post('/reviews/:tmdb_id', (req, res) => {
   if (!memoryStore.reviews[id]) memoryStore.reviews[id] = [];
   const review = { id: Date.now(), user: user || 'Anonymous', text, rating: rating || 5, createdAt: new Date().toISOString() };
   memoryStore.reviews[id].push(review);
+  recordBdaEvent('REVIEW', { tmdb_id: id, rating: review.rating, user: review.user }, req);
   res.json({ status: 'ok', message: 'Review added', data: review });
 });
 

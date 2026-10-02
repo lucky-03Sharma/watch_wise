@@ -150,7 +150,7 @@ The recommendation engine uses **TF-IDF (Term Frequency-Inverse Document Frequen
 - **Features**: 50,000 TF-IDF features
 - **Algorithm**: Cosine Similarity via `sklearn.metrics.pairwise.linear_kernel`
 - **Serving**: FastAPI with `/recommend`, `/genre`, `/search` endpoints
-
+deployed link :- https://watch-wise-5td3.onrender.com/
 ## 📄 License
 
 MIT License — feel free to fork and build upon this project!
